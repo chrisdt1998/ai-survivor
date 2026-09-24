@@ -1,0 +1,5 @@
+
+
+class Enemy:
+    
+    name = "Zombie"
