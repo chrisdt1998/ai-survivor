@@ -12,6 +12,7 @@ class Simulation:
     level = None
 
     event_handlers = defaultdict(list)
+    event_queue = []
 
     def __init__(self):
         self.level = Level()
@@ -22,13 +23,18 @@ class Simulation:
         player.add_component(PhysicsComponent())
         self.add_entity(player)
 
-    def listen(self, event_name, callback):
-        self.event_handlers[event_name].append(callback)
+    def listen(self, event_type, callback):
+        self.event_handlers[event_type].append(callback)
 
-    def emit(self, event_name, data):
-        callbacks = self.event_handlers[event_name]
-        for cb in callbacks:
-            cb(data)
+    def emit(self, event_type, data):
+        self.event_queue.append((event_type, data))
+    
+    def drain_events(self):
+        for (event_type, data) in self.event_queue:
+            callbacks = self.event_handlers[event_type]
+            for cb in callbacks:
+                cb(data)
+        self.event_queue.clear()
 
     def update(self, delta: float, actions: list[Action] = []):
         for action in actions:
@@ -40,10 +46,11 @@ class Simulation:
     def add_entity(self, entity: Entity):
         entity.id = len(self.entities)
         self.entities.append(entity)
+        self.emit("entity_added", entity)
 
     def remove_entity(self, entity: Entity):
         self.entities.pop(entity.id)
-        self.emit("entity_destroyed", { "entity_id": entity.id })
+        self.emit("entity_destroyed", entity)
     
     def get_entity(self, entity_id: int) -> Entity:
         return self.entities[entity_id]
