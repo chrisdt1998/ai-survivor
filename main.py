@@ -1,3 +1,4 @@
+from game.game import run_render
 import argparse
 import logging
 
@@ -17,3 +18,6 @@ if __name__ == "__main__":
 
     if not args.test and not args.train:
         logger.warning('No mode set, using test by default.')
+    
+    if args.render:
+        run_render()

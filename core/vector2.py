@@ -9,6 +9,15 @@ class Vector2:
         self.x = x
         self.y = y
 
+    def __str__(self):
+        return f"({self.x}, {self.y})"
+    
+    def __hash__(self):
+        return f"({self.x}, {self.y})".__hash__()
+    
+    def __eq__(self, other):
+        return other is Vector2 and self.x == other.x and self.y == other.y
+
     def length(self) -> float:
         return sqrt((self.x * self.x) + (self.y * self.y))
     
@@ -19,14 +28,23 @@ class Vector2:
         else:
             return Vector2()
     
+    def lerp(self, target, t):
+        return Vector2(
+            (1.0 - t) * self.x + t * target.x,
+            (1.0 - t) * self.y + t * target.y,
+        )
+
     def mult(self, value: float):
         return Vector2(self.x * value, self.y * value)
 
-    def add(self, vector: Vector2):
-        return Vector2(self.x + vector.x, self.y + vector.x)
+    def add(self, vector):
+        return Vector2(self.x + vector.x, self.y + vector.y)
 
-    def minus(self, vector: Vector2):
-        return Vector2(self.x - vector.x, self.y - vector.x)
+    def minus(self, vector):
+        return Vector2(self.x - vector.x, self.y - vector.y)
+
+    def direction_to(self, target):
+        return target.minus(self).normalize()
 
     def to_tuple(self):
         return (self.x, self.y)

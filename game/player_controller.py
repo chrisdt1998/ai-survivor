@@ -1,10 +1,11 @@
+from core.entity import Entity
 from core.vector2 import Vector2
 from core.actions.action import MoveAction
 import pygame
 
 class PlayerController:
 
-    def get_commands(self, player_id: int) -> list:
+    def get_actions(self, player: Entity) -> list:
         keys = pygame.key.get_pressed()
 
         direction = Vector2()
@@ -18,7 +19,7 @@ class PlayerController:
             direction.x += 1
         
         if direction.length() > 0:
-            return [MoveAction(player_id, direction)]
+            return [MoveAction(player, direction)]
         else:
             return []
         

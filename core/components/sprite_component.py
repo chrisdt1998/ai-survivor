@@ -1,4 +1,4 @@
-from core.components.component import Component
+from core.entity import Component
 
 class SpriteComponent(Component):
 

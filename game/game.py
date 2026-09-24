@@ -3,7 +3,7 @@ from game.renderer import Renderer
 from core.simulation import Simulation
 import pygame
 
-def run():
+def run_render():
     pygame.init()
 
     renderer = Renderer()
@@ -16,14 +16,14 @@ def run():
     player_controller = PlayerController()
 
     while running:
-        commands = player_controller.get_commands(player.id)
+        actions = player_controller.get_actions(player)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        simulation.update(delta_time, commands)
-        renderer.render(simulation)
+        simulation.update(delta_time, actions)
+        renderer.render(delta_time, simulation)
         delta_time = clock.tick(60) / 1000
 
     pygame.quit()
