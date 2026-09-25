@@ -102,7 +102,7 @@ class Simulation:
                 return entity
         return None
 
-    def get_closest(self, position: Vector2, range: float = inf, filter = lambda: True) -> Entity:
+    def get_closest(self, position: Vector2, range: float = inf, filter = lambda: True) -> Entity | None:
         closest_dist = inf
         closest_entity = None
 
@@ -114,10 +114,10 @@ class Simulation:
             if dist < range and dist < closest_dist:
                 closest_dist = dist
                 closest_entity = entity
-    
+
         return closest_entity
 
-    def get_entities_in_range(self, position: Vector2, range: float = inf, filter = lambda: True) -> Entity:
+    def get_entities_in_range(self, position: Vector2, range: float = inf, filter = lambda: True) -> list[Entity]:
         entities = []
 
         for entity in self.entities.values():
