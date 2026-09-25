@@ -24,3 +24,8 @@ class PhysicsComponent(Component):
     def update(self, delta):
         self.entity.position = self.entity.position.add(self.velocity.mult(delta))
         self.velocity = self.velocity.lerp(Vector2(), delta * self.decceleration)
+
+        self.entity.position = self.entity.position.clamp(
+            self.entity.simulation.map_min,
+            self.entity.simulation.map_max
+        )

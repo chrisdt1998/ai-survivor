@@ -4,6 +4,13 @@ from math import sqrt
 def rad_to_deg(value):
     pass
 
+def clamp(value, min_value, max_value):
+    if value < min_value:
+        return min_value
+    if value > max_value:
+        return max_value
+    return value
+
 class Vector2:
 
     x: float = 0
@@ -64,6 +71,12 @@ class Vector2:
     
     def angle(self):
         return math.atan(self.y / self.x)
+
+    def clamp(self, min_vector, max_vector):
+        return Vector2(
+            clamp(self.x, min_vector.x, max_vector.x),
+            clamp(self.y, min_vector.y, max_vector.y),
+        )
 
     def to_tuple(self):
         return (self.x, self.y)
