@@ -1,3 +1,4 @@
+from game.player_controller import PlayerController
 from game.gui.gui import GUI
 from core.level import Level
 from core.vector2 import Vector2
@@ -17,11 +18,11 @@ def loadSprite(path) -> pygame.Surface:
 
 class Renderer:
     
-    def __init__(self, simulation: Simulation):
+    def __init__(self):
+        pygame.init()
+
         self.screen = pygame.display.set_mode((1280, 720), flags=pygame.RESIZABLE)
-        self.simulation = simulation
         self.sprites = set()
-        self.gui = GUI(simulation, self)
 
         self.entities_sprites = {
             "player": loadSprite("manBlue_gun.png"),
@@ -33,11 +34,21 @@ class Renderer:
             "dirt_0": loadSprite("tiles/tile_05.png"),
             "dirt_1": loadSprite("tiles/tile_04.png"),
         }
+
         self.pixel_size = self.tiles_sprites["dirt_0"].get_width()
         self.camera = Camera(self.screen, self.pixel_size)
+    
+    def set_simulation(self, simulation):
+        self.sprites.clear()
 
+        self.simulation = simulation
         self.simulation.listen("entity_attacked", self.handle_entity_attack)
         self.simulation.listen("entity_added", self.handle_entity_added)
+
+        self.player = self.simulation.get_entity_by_name("player")
+        self.player_controller = PlayerController()
+
+        self.gui = GUI(simulation, self)
 
     def render(self, delta: float):
         self.screen.fill((0, 0, 0))
@@ -52,15 +63,37 @@ class Renderer:
         self.gui.render(delta)
 
         pygame.display.flip()
+    
+    def run(self):
+        clock = pygame.time.Clock()
+        running = True
+        delta_time = 0
+
+        while running:
+            actions = self.player_controller.get_actions(self.player)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                if event.type == pygame.WINDOWRESIZED:
+                    print("resized")
+
+            self.simulation.update(delta_time, actions)
+            self.simulation.drain_events()
+            self.render(delta_time)
+
+            delta_time = clock.tick(60) / 1000
+
+        pygame.quit()
 
     def render_level(self, level: Level):
         for tile_pos in level.tiles:
             tile = level.tiles[tile_pos]
             sprite = self.tiles_sprites[tile.tile_type]
-            self.screen.blit(sprite, self.get_render_pos(Vector2(tile_pos[0], tile_pos[1])))
+            self.screen.blit(sprite, self.get_render_pos(Vector2(tile_pos[0], tile_pos[1])).to_tuple())
     
     def get_render_pos(self, pos: Vector2):
-        return pos.minus(self.camera.position).mult(self.pixel_size).to_tuple()
+        return pos.minus(self.camera.position).mult(self.pixel_size)
 
     def handle_entity_added(self, entity: Entity):
         if entity.entity_type in self.entities_sprites:
@@ -69,10 +102,23 @@ class Renderer:
             entity.add_component(sprite_component)
 
     def handle_entity_attack(self, event):
-        if event["source"].name == "player":
+        if event["source"].entity_type == "player":
             bullet = Entity(Vector2())
             line_component = LineComponent(
                 self,
+                (255, 218, 115),
+                event["source"].position,
+                event["target"].position,
+            )
+            bullet.add_component(line_component)
+            bullet.add_component(AutoDestroyComponent(.05))
+            self.simulation.add_entity(bullet)
+        
+        elif event["source"].entity_type == "enemy":
+            bullet = Entity(Vector2())
+            line_component = LineComponent(
+                self,
+                (200, 0, 0),
                 event["source"].position,
                 event["target"].position,
             )

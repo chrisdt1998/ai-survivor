@@ -84,7 +84,19 @@ class Entity:
         self._health = value
 
     def set_attribute(self, attribute_id: str, value: float):
+        old_value = self.attributes.get(attribute_id, 0.0)
+        if value == old_value:
+            return
+
         self.attributes[attribute_id] = value
+
+        if self.simulation:
+            self.simulation.emit("attribute_changed", {
+                "entity": self,
+                "attribute_id": attribute_id,
+                "old_value": old_value,
+                "value": value
+            })
 
         if attribute_id == "health" and value <= 0:
             self.destroy()

@@ -30,6 +30,7 @@ class Simulation:
 
         self.homestead = Entity(name="homestead", entity_type="homestead", position=Vector2(0, 0))
         self.homestead.alliance = Alliance.ally
+        self.homestead.set_attribute(Attributes.max_health, 50)
         self.homestead.set_attribute(Attributes.health, 50)
         self.homestead.set_attribute(Attributes.move_speed, 0)
         self.homestead.add_component(PhysicsComponent())
@@ -37,6 +38,7 @@ class Simulation:
 
         player = Entity(name="player", entity_type="player", position=Vector2(3, 0))
         player.alliance = Alliance.ally
+        player.set_attribute(Attributes.max_health, 30)
         player.set_attribute(Attributes.health, 30)
         player.set_attribute(Attributes.move_speed, 5.0)
         player.set_attribute(Attributes.damage, 5.0)

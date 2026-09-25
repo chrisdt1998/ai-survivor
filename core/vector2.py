@@ -1,4 +1,8 @@
+import math
 from math import sqrt
+
+def rad_to_deg(value):
+    pass
 
 class Vector2:
 
@@ -58,6 +62,9 @@ class Vector2:
     def distance_squared_to(self, vector):
         return vector.minus(self).length_squared()
     
+    def angle(self):
+        return math.atan(self.y / self.x)
+
     def to_tuple(self):
         return (self.x, self.y)
     

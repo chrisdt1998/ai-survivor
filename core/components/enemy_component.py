@@ -15,7 +15,10 @@ class EnemyComponent(Component):
         if not _target:
             return
 
+        distance = self.entity.position.distance_to(_target.position)
+        if distance < self.entity.get_attribute(Attributes.attack_range) * 0.75:
+            return
+
         direction = self.entity.position.direction_to(_target.position)
-        
         move_speed = self.entity.get_attribute(Attributes.move_speed)
         self.physics.velocity = direction.mult(move_speed)

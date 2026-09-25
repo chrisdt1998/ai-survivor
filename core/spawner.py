@@ -1,3 +1,5 @@
+import math
+from core.components.attack_component import AttackComponent
 import random
 from core.entity import Alliance, Entity
 from core.attributes import Attributes
@@ -11,7 +13,8 @@ class Spawner:
         self.simulation = simulation
 
         self.spawn_timer = 0
-        self.spawn_delay = 5.0
+        self.spawn_delay = 10.0
+        self.min_spawn_delay = 0.1
     
     def update(self, delta):
         if self.spawn_timer > 0:
@@ -20,18 +23,23 @@ class Spawner:
         
         self.spawn_enemy()
         self.spawn_timer = self.spawn_delay
+
+        self.spawn_delay -= 0.01
+        if self.spawn_delay < self.min_spawn_delay:
+            self.spawn_delay = self.min_spawn_delay
     
     def spawn_enemy(self):
         enemy = Entity(name="enemy", entity_type="enemy", position=self.get_random_position())
         enemy.alliance = Alliance.opponent
         enemy.set_attribute(Attributes.health, 10)
-        enemy.set_attribute(Attributes.move_speed, 2.0)
+        enemy.set_attribute(Attributes.move_speed, 1.0)
         enemy.set_attribute(Attributes.damage, 5)
         enemy.set_attribute(Attributes.attack_range, 2.0)
         enemy.set_attribute(Attributes.attack_speed, 0.5)
         enemy.add_component(PhysicsComponent())
         enemy_component = EnemyComponent()
         enemy.add_component(enemy_component)
+        enemy.add_component(AttackComponent())
         self.simulation.add_entity(enemy)
     
     def get_random_position(self):
