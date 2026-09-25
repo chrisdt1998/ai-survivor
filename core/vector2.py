@@ -20,6 +20,9 @@ class Vector2:
 
     def length(self) -> float:
         return sqrt((self.x * self.x) + (self.y * self.y))
+
+    def length_squared(self) -> float:
+        return (self.x * self.x) + (self.y * self.y)
     
     def normalize(self):
         length = self.length()
@@ -37,6 +40,9 @@ class Vector2:
     def mult(self, value: float):
         return Vector2(self.x * value, self.y * value)
 
+    def div(self, value: float):
+        return Vector2(self.x / value, self.y / value)
+
     def add(self, vector):
         return Vector2(self.x + vector.x, self.y + vector.y)
 
@@ -46,5 +52,12 @@ class Vector2:
     def direction_to(self, target):
         return target.minus(self).normalize()
 
+    def distance_to(self, vector):
+        return vector.minus(self).length()
+    
+    def distance_squared_to(self, vector):
+        return vector.minus(self).length_squared()
+    
     def to_tuple(self):
         return (self.x, self.y)
+    

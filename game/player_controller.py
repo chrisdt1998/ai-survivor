@@ -17,7 +17,7 @@ class PlayerController:
             direction.x -= 1
         if keys[pygame.K_d]:
             direction.x += 1
-        
+
         if direction.length() > 0:
             return [MoveAction(player, direction)]
         else:

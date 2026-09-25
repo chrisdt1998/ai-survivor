@@ -7,11 +7,11 @@ class Camera:
     offset = Vector2()
     target: Entity = None
 
-    def __init__(self, screen):
+    def __init__(self, screen, pixel_size):
         self.offset = Vector2(
             screen.get_rect().centerx,
             screen.get_rect().centery,
-        )
+        ).div(pixel_size)
 
     def update(self, delta):
         if self.target:

@@ -6,8 +6,8 @@ import pygame
 def run_render():
     pygame.init()
 
-    renderer = Renderer()
     simulation = Simulation()
+    renderer = Renderer(simulation)
     clock = pygame.time.Clock()
     running = True
     delta_time = 0
@@ -21,9 +21,13 @@ def run_render():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.WINDOWRESIZED:
+                print("resized")
 
         simulation.update(delta_time, actions)
-        renderer.render(delta_time, simulation)
+        simulation.drain_events()
+        renderer.render(delta_time)
+
         delta_time = clock.tick(60) / 1000
 
     pygame.quit()

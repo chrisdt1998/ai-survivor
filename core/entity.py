@@ -1,5 +1,10 @@
+from typing import TYPE_CHECKING
 from ast import TypeVar
+
 from core.vector2 import Vector2
+
+if TYPE_CHECKING:
+    from core.simulation import Simulation
 
 
 class Component:
@@ -7,42 +12,85 @@ class Component:
     def __init__(self):
         self.entity: Entity | None = None
 
+    def setup(self):
+        pass
+
+    def on_destroyed(self):
+        pass
+
     def update(self, delta: float):
         pass
+
+
+class Alliance:
+    neutral = 0
+    ally = 1
+    opponent = 2
 
 
 T = TypeVar("T")
 
 class Entity:
 
-    id = -1
-    name: str = ""
-    entity_type: str = ""
-    position = Vector2(0, 0)
-    _components: dict[type, Component] = {}
-    attributes: dict[str, float] = {}
-
     def __init__(self, name="", entity_type="", position=Vector2(0, 0)):
-        self.position = position
-        self.name = name
-        self.entity_type = entity_type
+        self.id: int = -1
+        self.position: Vector2 = position
+        self.name: str = name
+        self.entity_type: str = entity_type
+        self.alliance = Alliance.neutral
+        self.tags = set()
+        self.attributes: dict[str, float] = {}
+        self.components: dict[type, Component] = {}
+        self.rotation: float = 0
+        self.simulation: Simulation = None
+
+    def setup(self):
+        for comp in self.components.values():
+            comp.setup()
 
     def update(self, delta: float):
-        for comp in self._components.values():
+        for comp in self.components.values():
             comp.update(delta)
+    
+    def on_destroyed(self):
+        for comp in self.components.values():
+            comp.on_destroyed()
+
+    def has_tag(self, tag) -> bool:
+        return tag in self.tags
+
+    def destroy(self):
+        self.simulation.destroy_entity(self)
 
     def add_component(self, component: Component):
         component.entity = self
-        self._components[type(component)] = component
+        self.components[type(component)] = component
+
+        if self.id >= 0:
+            component.setup()
     
     def get_component(self, component_type: type[T]) -> T:
-        return self._components.get(component_type, None)
+        return self.components.get(component_type, None)
     
     def has_component(self, component_type: type):
-        return component_type in self._components
+        return component_type in self.components
+
+    @property
+    def health(self):
+        return self._health
+
+    @health.setter
+    def set_health(self, value):
+        self._health = value
 
     def set_attribute(self, attribute_id: str, value: float):
         self.attributes[attribute_id] = value
+
+        if attribute_id == "health" and value <= 0:
+            self.destroy()
+    
+    def add_attribute(self, attribute_id: str, value: float):
+        self.set_attribute(attribute_id, self.attributes[attribute_id] + value)
     
     def get_attribute(self, attribute_id: str) -> float:
         return self.attributes.get(attribute_id, 0)
