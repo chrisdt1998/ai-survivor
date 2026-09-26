@@ -8,6 +8,9 @@ class Camera:
     target: Entity = None
 
     def __init__(self, screen, pixel_size):
+        self.set_screen(screen, pixel_size)
+
+    def set_screen(self, screen, pixel_size):
         self.offset = Vector2(
             screen.get_rect().centerx,
             screen.get_rect().centery,

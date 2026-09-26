@@ -1,8 +1,10 @@
 import math
-from math import sqrt
 
 def rad_to_deg(value):
-    pass
+    return value * (180 / math.pi)
+
+def deg_to_rad(value):
+    return value * (math.pi / 180)
 
 def clamp(value, min_value, max_value):
     if value < min_value:
@@ -30,7 +32,7 @@ class Vector2:
         return other is Vector2 and self.x == other.x and self.y == other.y
 
     def length(self) -> float:
-        return sqrt((self.x * self.x) + (self.y * self.y))
+        return math.sqrt((self.x * self.x) + (self.y * self.y))
 
     def length_squared(self) -> float:
         return (self.x * self.x) + (self.y * self.y)
@@ -70,7 +72,16 @@ class Vector2:
         return vector.minus(self).length_squared()
     
     def angle(self):
-        return math.atan(self.y / self.x)
+        return rad_to_deg(math.atan2(self.x, self.y)) + 270
+    
+    def rotated(self, angle):
+        angle = -deg_to_rad(angle)
+        c = math.cos(angle)
+        s = math.sin(angle)
+        return Vector2(
+            self.x * c - self.y * s,
+            self.x * s + self.y * c
+        )
 
     def clamp(self, min_vector, max_vector):
         return Vector2(

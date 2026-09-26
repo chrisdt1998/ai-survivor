@@ -16,8 +16,8 @@ class PhysicsComponent(Component):
 
     def __init__(self):
         self.velocity: Vector2 = Vector2()
-        self.acceleration: float = 5.0
-        self.decceleration: float = 5.0
+        self.acceleration: float = 10.0
+        self.decceleration: float = 10.0
 
         self.hitbox = Circle(1.0)
 

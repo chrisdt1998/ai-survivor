@@ -1,12 +1,14 @@
+from game.gui.gui_element import GuiElement
 from core.attributes import Attributes
+from game.gui.text import Text
 import pygame
 
-class Healthbar:
+class Healthbar(GuiElement):
     
     def __init__(self, position, simulation, entity):
+        super().__init__(position)
         self.font = pygame.font.SysFont("Arial", 30)
 
-        self.position = position
         self.entity = entity
         self.height = 30
         self.width = 100

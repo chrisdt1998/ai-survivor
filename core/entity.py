@@ -34,6 +34,9 @@ class Entity:
 
     def __init__(self, name="", entity_type="", position=Vector2(0, 0)):
         self.id: int = -1
+        self.is_destroyed = False
+        self.simulation: Simulation = None
+
         self.position: Vector2 = position
         self.name: str = name
         self.entity_type: str = entity_type
@@ -42,7 +45,6 @@ class Entity:
         self.attributes: dict[str, float] = {}
         self.components: dict[type, Component] = {}
         self.rotation: float = 0
-        self.simulation: Simulation = None
 
     def setup(self):
         for comp in self.components.values():
@@ -60,6 +62,7 @@ class Entity:
         return tag in self.tags
 
     def destroy(self):
+        self.is_destroyed = True
         self.simulation.destroy_entity(self)
 
     def add_component(self, component: Component):

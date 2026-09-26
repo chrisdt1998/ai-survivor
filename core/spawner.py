@@ -33,13 +33,11 @@ class Spawner:
         enemy.alliance = Alliance.opponent
         enemy.set_attribute(Attributes.health, 10)
         enemy.set_attribute(Attributes.move_speed, 1.0)
-        enemy.set_attribute(Attributes.damage, 5)
-        enemy.set_attribute(Attributes.attack_range, 2.0)
+        enemy.set_attribute(Attributes.damage, 1)
+        enemy.set_attribute(Attributes.attack_range, 1.0)
         enemy.set_attribute(Attributes.attack_speed, 0.5)
         enemy.add_component(PhysicsComponent())
-        enemy_component = EnemyComponent()
-        enemy.add_component(enemy_component)
-        enemy.add_component(AttackComponent())
+        enemy.add_component(EnemyComponent())
         self.simulation.add_entity(enemy)
     
     def get_random_position(self):

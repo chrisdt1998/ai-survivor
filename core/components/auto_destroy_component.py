@@ -3,7 +3,7 @@ from core.entity import Component
 class AutoDestroyComponent(Component):
 
     def __init__(self, duration):
-        super()
+        super().__init__()
         self.timer = duration
 
     def update(self, delta):

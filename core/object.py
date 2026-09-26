@@ -15,13 +15,14 @@ class ObjectList:
             if object:
                 yield object
 
-    def add(self, sprite: Object):
+    def add(self, object: Object):
         if self._free_ids:
-            sprite.id = self._free_ids.pop()
-            self._objects[sprite.id] = sprite
+            object.id = self._free_ids.pop()
+            self._objects[object.id] = object
         else:
-            sprite.id = len(self._objects)
-            self._objects.append(sprite)
+            object.id = len(self._objects)
+            self._objects.append(object)
 
     def remove(self, object: Object):
-        pass
+        self._free_ids.append(object.id)
+        self._objects[object.id] = None
