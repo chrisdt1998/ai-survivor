@@ -1,20 +1,20 @@
-from game.gui.gui_element import GuiElement
+from game.gui.gui_element import GUIElement
 from core.vector2 import Vector2
-from game.gui.text import Text
+from game.gui.gui_text import GUIText
 import pygame
 
-class AttributeDescription(GuiElement):
+class AttributeDescription(GUIElement):
 
     def __init__(self, attribute_id, value):
-        self.name = Text(attribute_id, horizontal_alignment="start")
+        self.name = GUIText(attribute_id, horizontal_alignment="start")
         self.name.size.x = 100
         self.add_child(self.name)
 
-        self.value = Text(str(value), horizontal_alignment="center")
+        self.value = GUIText(str(value), horizontal_alignment="center")
         self.value.size.x = 50
         self.add_child(self.value)
 
-class AttributesList(GuiElement):
+class AttributesList(GUIElement):
 
     def __init__(self, position: Vector2, simulation, entity):
         super().__init__(
@@ -30,7 +30,7 @@ class AttributesList(GuiElement):
         self.attributes = {}
         for attribute_id in entity.attributes:
             content = f"{attribute_id} {entity.get_attribute(attribute_id)}"
-            text = Text(content, font_size=20)
+            text = GUIText(content, font_size=20)
             self.add_child(text)
             self.attributes[attribute_id] = text
 

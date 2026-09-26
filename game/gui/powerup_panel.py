@@ -1,9 +1,9 @@
-from game.gui.gui_element import GuiElement
+from game.gui.gui_element import GUIElement
 from core.vector2 import Vector2
-from game.gui.text import Text
+from game.gui.gui_text import GUIText
 import pygame
 
-class PowerupPanel(GuiElement):
+class PowerupPanel(GUIElement):
 
     def __init__(self, position: Vector2, sprite):
         super().__init__(
@@ -14,10 +14,10 @@ class PowerupPanel(GuiElement):
         )
         self.sprite = sprite
 
-        self.title = Text("Bigger Gun", horizontal_alignment="center")
+        self.title = GUIText("Bigger Gun", horizontal_alignment="center")
         self.add_child(self.title)
         
-        self.description = Text("+5 damage", horizontal_alignment="center")
+        self.description = GUIText("+5 damage", horizontal_alignment="center")
         self.add_child(self.description)
 
     def render(self, screen: pygame.Surface, delta):

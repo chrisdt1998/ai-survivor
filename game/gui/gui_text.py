@@ -1,16 +1,16 @@
-from game.gui.gui_element import GuiElement
+from game.gui.gui_element import GUIElement
 from core.vector2 import Vector2
 import pygame
 
-class Text(GuiElement):
+class GUIText(GUIElement):
 
     fonts = {}
 
     @staticmethod
     def get_font(font_size):
-        if font_size not in Text.fonts:
-            Text.fonts[font_size] = pygame.font.SysFont("Arial", font_size)
-        return Text.fonts[font_size]
+        if font_size not in GUIText.fonts:
+            GUIText.fonts[font_size] = pygame.font.SysFont("Arial", font_size)
+        return GUIText.fonts[font_size]
 
     def __init__(self,
         text="",
@@ -31,7 +31,7 @@ class Text(GuiElement):
     def set_text(self, text):
         self._text = text
         if text:
-            font = Text.get_font(self.font_size)
+            font = GUIText.get_font(self.font_size)
             self._font_image = font.render(self._text, True , self.color)
             self.size = Vector2(self._font_image.get_width(), self._font_image.get_height())
         else:

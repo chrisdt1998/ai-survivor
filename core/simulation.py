@@ -1,3 +1,4 @@
+from core.components.health_regen_component import HealthRegenComponent
 from collections import defaultdict
 from math import inf
 import random
@@ -15,6 +16,8 @@ from core.components.physics_component import PhysicsComponent
 from core.components.powerup_picker_component import PowerupPickerComponent
 from core.components.powerup_component import PowerupComponent
 from core.components.enemy_component import EnemyComponent
+
+FIXED_DT = 1.0 / 30
 
 class Simulation:
 
@@ -36,7 +39,7 @@ class Simulation:
         
         self.enemies_spawner = Spawner(self, self.create_enemy)
         self.enemies_spawner.spawn_delay = 5.0
-        self.enemies_spawner.spawn_delay_decrement = 0.1
+        self.enemies_spawner.spawn_delay_decrement = 0.25
 
         self.powerup_spawner = Spawner(self, self.create_powerup)
         self.powerup_spawner.spawn_border_size = 5
@@ -46,6 +49,7 @@ class Simulation:
         self.homestead.alliance = Alliance.ally
         self.homestead.set_data(ENTITIES["homestead"])
         self.homestead.add_component(PhysicsComponent())
+        self.homestead.add_component(HealthRegenComponent())
         self.add_entity(self.homestead)
 
         player = Entity(name="player", entity_type="player", position=Vector2(3, 0))
@@ -54,6 +58,7 @@ class Simulation:
         player.add_component(PhysicsComponent())
         player.add_component(AttackComponent())
         player.add_component(PowerupPickerComponent())
+        player.add_component(HealthRegenComponent())
         self.add_entity(player)
 
     def listen(self, event_type, callback):

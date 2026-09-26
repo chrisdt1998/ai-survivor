@@ -69,6 +69,7 @@ class Renderer:
         clock = pygame.time.Clock()
         running = True
         delta_time = 0
+        accumulator = 0
 
         while running:
             actions = self.player_controller.get_actions(self.player)

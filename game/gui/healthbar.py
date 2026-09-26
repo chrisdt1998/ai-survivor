@@ -1,38 +1,36 @@
-from game.gui.gui_element import GuiElement
+from core.vector2 import Vector2
 from core.attributes import Attributes
-from game.gui.text import Text
-import pygame
+from game.gui.gui_panel import GUIPanel
+from game.gui.gui_text import GUIText
+from game.gui.gui_element import GUIElement
 
-class Healthbar(GuiElement):
+class Healthbar(GUIElement):
     
     def __init__(self, position, simulation, entity):
-        super().__init__(position)
-        self.font = pygame.font.SysFont("Arial", 30)
+        super().__init__(
+            position,
+            direction="unset",
+            size=Vector2(150, 30)
+        )
 
         self.entity = entity
-        self.height = 30
-        self.width = 100
-        self.health_width = self.width
+        self.max_health = entity.get_attribute(Attributes.max_health)
         self.current_health = entity.get_attribute(Attributes.health)
 
+        self.bar_size = Vector2(100, 30)
+        self.text = self.add_child(GUIText(str(self.current_health), position=Vector2(100, 0)))
+        self.background = self.add_child(GUIPanel(color=(100, 100, 100), size=self.bar_size))
+        self.foreground = self.add_child(GUIPanel(color=(255, 255, 255), size=self.bar_size))
+
         simulation.listen("attribute_changed", self.handle_attribute_changed)
-
-    def render(self, screen: pygame.Surface, delta):
-        screen.fill(
-            (100, 100, 100),
-            (self.position.x, self.position.y, self.width, self.height),
-        )
-        screen.fill(
-            (255, 255, 255),
-            (self.position.x, self.position.y, self.health_width, self.height),
-        )
-
-        font_image = self.font.render(str(self.current_health), True , "white")
-        screen.blit(font_image, (self.position.x + self.width + 5, self.position.y))
 
     def handle_attribute_changed(self, event):
         target = event["entity"]
         if target == self.entity:
             max_health = target.get_attribute(Attributes.max_health)
-            self.current_health = target.get_attribute(Attributes.health)
-            self.health_width = self.width * (self.current_health / max_health)
+            current_health = target.get_attribute(Attributes.health)
+            self.text.set_text(str(current_health))
+            self.foreground.size = Vector2(
+                self.bar_size.x * (self.current_health / max_health),
+                self.bar_size.y
+            )

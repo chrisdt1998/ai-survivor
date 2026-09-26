@@ -1,15 +1,18 @@
 
+
 ENTITIES = {
     "homestead": {
         "sprite": "homestead.png",
         "attributes": {
             "max_health": 50,
+            "health_regen": 1,
         }
     },
     "player": {
         "sprite": "player.png",
         "attributes": {
             "max_health": 30,
+            "health_regen": 1,
             "move_speed": 5,
             "damage": 10,
             "attack_speed": 0.5,
@@ -20,7 +23,7 @@ ENTITIES = {
         "sprite": "zombie.png",
         "attributes": {
             "max_health": 10,
-            "move_speed": 0.5,
+            "move_speed": 0.75,
             "damage": 10,
             "attack_range": 1.0,
             "attack_speed": 0.5,

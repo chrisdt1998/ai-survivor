@@ -1,8 +1,7 @@
+from core.vector2 import Vector2, clamp
 from core.attributes import Attributes
 from typing import TYPE_CHECKING
 from ast import TypeVar
-
-from core.vector2 import Vector2
 
 if TYPE_CHECKING:
     from core.simulation import Simulation
@@ -102,6 +101,10 @@ class Entity:
         if value == old_value:
             return
 
+        if attribute_id == Attributes.health:
+            max_health = self.get_attribute(Attributes.max_health)
+            value = clamp(value, 0, max_health)
+
         self.attributes[attribute_id] = value
 
         if self.simulation:
@@ -112,7 +115,7 @@ class Entity:
                 "value": value
             })
 
-        if attribute_id == "health" and value <= 0:
+        if attribute_id == Attributes.health and value <= 0:
             self.destroy()
     
     def add_attribute(self, attribute_id: str, value: float):

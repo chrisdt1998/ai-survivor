@@ -1,7 +1,7 @@
 from core.vector2 import Vector2
 from core.object import Object
 
-class GuiElement(Object):
+class GUIElement(Object):
 
     def __init__(
         self,
@@ -44,6 +44,7 @@ class GuiElement(Object):
 
         self._update_child(child)
         self.children.append(child)
+        return child
 
     def remove_child(self, child):
         for i in range(len(self.children)):
