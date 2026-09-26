@@ -108,6 +108,8 @@ class Simulation:
         # Defer entity removal to avoid issues during
         # entities loop update
         entity.on_destroyed()
+        if entity.entity_type == 'player':
+            print('player killed')
         self.entities_to_remove.append(entity.id)
         self.emit("entity_destroyed", entity)
     
@@ -159,7 +161,7 @@ class Simulation:
             scaling_fn = ENTITIES["enemy"]["scaling"][attribute_id]
             value = round(scaling_fn(default_attributes[attribute_id], self.game_duration))
             enemy.set_attribute(attribute_id, value)
-            print(f"[Enemy] {attribute_id} {value}")
+            # print(f"[Enemy] {attribute_id} {value}")
 
             if attribute_id == Attributes.max_health:
                 enemy.set_attribute(Attributes.health, value)

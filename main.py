@@ -10,6 +10,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--train', help='Train the model', required=False, default=False, action='store_true')
     parser.add_argument('--render', help='Run and show the renders', required=False, default=False, action='store_true')
+    parser.add_argument('--show-plot', help='Display the training plot live (it is always saved to file)', required=False, default=False, action='store_true')
 
     args = parser.parse_args()
     

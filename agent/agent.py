@@ -4,6 +4,7 @@ from collections import deque
 from types import SimpleNamespace
 from core.actions.action import MoveAction
 from core.vector2 import Vector2
+from core.entity import Entity
 
 import numpy as np
 import torch
@@ -25,10 +26,11 @@ class Agent:
         player_killed=-10,
         homestead_destroyed=-10,
         enemy_killed=0.1,
-        powerup_collected=0.5,
+        powerup_collected=1,
         base_damage=-0.1,
         nearby_enemy=-0.05,
-        nearby_powerup=0.1,
+        nearby_powerup=0.5,
+        time_alive=0.1,
     )
 
     def __init__(self, mode='test', model_path='') -> None:
@@ -42,6 +44,7 @@ class Agent:
         self.num_non_random_moves = 0
         self.num_random_moves = 0
         self.mode = mode
+        self.player: Entity | None = None
         if mode == 'train':
             if not model_path:
                 self.model_main = Linear_QNet(STATE_SIZE, 480, 5)  # State size, hidden size and output action size
@@ -53,6 +56,9 @@ class Agent:
                 self.model_main.load_state_dict(torch.load(model_path))
                 self.model_target = copy.deepcopy(self.model_main)
                 self.trainer = QTrainer(self.model_main, lr=LR, gamma=self.gamma)
+
+    def reset_game(self, simulation):
+        self.player = simulation.get_entity_by_name('player')
 
     def get_bucketed_position(self, position_1: float, position_2: float) -> int:
         return int(position_1 - position_2 + AGENT_VIEWING_DISTANCE)
@@ -78,10 +84,8 @@ class Agent:
                 enemies.append(entity)
         return SimpleNamespace(homestead=homestead, enemies=enemies, powerups=powerups)
 
-
     def get_state(self, simulation: Simulation) -> np.ndarray:
-        player = simulation.get_entity_by_name('player')
-        entities_in_range = self.get_nearby_entities(player, simulation)
+        entities_in_range = self.get_nearby_entities(self.player, simulation)
 
         # Player and boundary
         player_state = np.zeros((GRID_SIZE, GRID_SIZE))
@@ -115,7 +119,6 @@ class Agent:
         return final_move
 
     def play_step(self, action, simulation, time_delta):
-        player = simulation.get_entity_by_name('player')
         final_move = [
             Vector2(0, 1),  # Down
             Vector2(-1, 0),  # Left
@@ -124,9 +127,11 @@ class Agent:
         ]
         move_idx = action.index(1)
         # If move_idx == 4, it means just don't move
+        actions = []
         if move_idx != 4:
-            action = MoveAction(player, final_move[action.index(1)])
-            simulation.update(time_delta, [action])
+            actions.append(MoveAction(self.player, final_move[action.index(1)]))
+        simulation.update(time_delta, actions)
+
         done = False
         reward = 0
         for event_type, data in simulation.event_queue:
@@ -145,11 +150,12 @@ class Agent:
 
         simulation.drain_events()
 
-        entities_in_danger_zone = self.get_nearby_entities(player, simulation, distance=DANGER_DISTANCE)
-        reward += len(entities_in_danger_zone.enemies) * self.reward_system.nearby_enemy
-        reward += len(entities_in_danger_zone.powerups) * self.reward_system.nearby_powerup
-        # For staying alive
-        reward += 0.001
+        if not self.player.is_destroyed:
+            entities_in_danger_zone = self.get_nearby_entities(self.player, simulation, distance=DANGER_DISTANCE)
+            reward += len(entities_in_danger_zone.enemies) * self.reward_system.nearby_enemy
+            reward += len(entities_in_danger_zone.powerups) * self.reward_system.nearby_powerup
+            # For staying alive
+            reward += self.reward_system.time_alive
 
         return reward, done
 
@@ -163,6 +169,11 @@ class Agent:
             mini_sample = self.memory
 
         states, actions, rewards, next_states, dones = zip(*mini_sample)
+        states = np.array(states)
+        actions = np.array(actions)
+        rewards = np.array(rewards)
+        next_states = np.array(next_states)
+        dones = np.array(dones)
         self.trainer.train_step(states, actions, rewards, next_states, model_target, dones)
 
     def remember(self, state, action, reward, next_state, done):

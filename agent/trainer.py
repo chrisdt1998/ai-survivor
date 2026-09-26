@@ -3,32 +3,35 @@ from core.simulation import Simulation
 import copy
 
 import matplotlib.pyplot as plt
-from IPython import display
+# from IPython import display
 from game.renderer import Renderer
-
-plt.ion()
 
 FPS = 15
 TIME_DELTA = 1 / FPS
+PLOT_FILE = 'agent/training_plot.png'
+PLOT_SAVE_INTERVAL = 10
 
-def plot(scores, mean_scores):
-    display.clear_output(wait=True)
-    display.display(plt.gcf())
+def plot(scores, mean_scores, show=False, save=False):
     plt.clf()
     plt.title('Training...')
     plt.xlabel('Number of Games')
     plt.ylabel('Score')
     plt.plot(scores)
     plt.plot(mean_scores)
-    # plt.ylim(ymin=0)
     plt.text(len(scores) - 1, scores[-1], str(scores[-1]))
     plt.text(len(mean_scores) - 1, mean_scores[-1], str(mean_scores[-1]))
-    plt.show(block=False)
-    plt.pause(.1)
+    if save:
+        plt.savefig(PLOT_FILE)
+    if show:
+        plt.pause(0.001)
 
 
-
-def train(renderer: Renderer | None = None, model_path='', nbr_games=20000):
+def train(renderer: Renderer | None = None, model_path='', nbr_games=20000, show_plot=False):
+    if show_plot:
+        plt.ion()
+    else:
+        # Non-interactive backend: no window, works headless
+        plt.switch_backend('Agg')
     plot_scores = []
     plot_mean_scores = []
     total_score = 0
@@ -37,6 +40,7 @@ def train(renderer: Renderer | None = None, model_path='', nbr_games=20000):
     # agent = Agent(mode='train', model_path=model_path)
     simulation = Simulation()
     agent = Agent(mode='train', model_path=model_path)
+    agent.reset_game(simulation)
     if renderer:
         renderer.set_simulation(simulation)
     current_iter = 0
@@ -84,8 +88,11 @@ def train(renderer: Renderer | None = None, model_path='', nbr_games=20000):
             total_score += current_score
             mean_score = total_score / agent.n_games
             plot_mean_scores.append(mean_score)
-            # plot(plot_scores, plot_mean_scores)
+            save_plot = agent.n_games % PLOT_SAVE_INTERVAL == 0
+            if show_plot or save_plot:
+                plot(plot_scores, plot_mean_scores, show=show_plot, save=save_plot)
             simulation = Simulation()
+            agent.reset_game(simulation)
             if renderer:
                 renderer.set_simulation(simulation)
             current_score = 0
