@@ -1,19 +1,19 @@
-from game.sprites import Sprites
-from game.components.visual_component import VisualComponent
 from core.object import ObjectList
-from game.tween import Tween
-from game.player_controller import PlayerController
-from game.gui.gui import GUI
 from core.level import Level
 from core.vector2 import Vector2
 from core.entity import Entity
+from core.entities_data import ENTITIES
 from core.simulation import Simulation
 from core.components.auto_destroy_component import AutoDestroyComponent
 
 from game.camera import Camera
 from game.components.sprite_component import SpriteComponent
 from game.components.line_component import LineComponent
-from game.entities_data import ENTITIES
+from game.tween import Tween
+from game.player_controller import PlayerController
+from game.gui.gui import GUI
+from game.sprites import Sprites
+from game.components.visual_component import VisualComponent
 
 import pygame
 

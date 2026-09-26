@@ -1,14 +1,20 @@
-from math import inf
 from collections import defaultdict
+from math import inf
+import random
 
 from core.vector2 import Vector2
 from core.level import Level
 from core.entity import Entity, Alliance
 from core.attributes import Attributes
 from core.actions.action import Action
+from core.spawner import Spawner
+from core.entities_data import ENTITIES
+
 from core.components.attack_component import AttackComponent
 from core.components.physics_component import PhysicsComponent
-from core.spawner import Spawner
+from core.components.powerup_picker_component import PowerupPickerComponent
+from core.components.powerup_component import PowerupComponent
+from core.components.enemy_component import EnemyComponent
 
 class Simulation:
 
@@ -26,26 +32,28 @@ class Simulation:
         self.map_max = Vector2(10, 10)
         self.level = Level(self.map_min, self.map_max)
 
-        self.spawner = Spawner(self)
+        self.game_duration = 0
+        
+        self.enemies_spawner = Spawner(self, self.create_enemy)
+        self.enemies_spawner.spawn_delay = 5.0
+        self.enemies_spawner.spawn_delay_decrement = 0.1
+
+        self.powerup_spawner = Spawner(self, self.create_powerup)
+        self.powerup_spawner.spawn_border_size = 5
+        self.powerup_spawner.spawn_delay = 5.0
 
         self.homestead = Entity(name="homestead", entity_type="homestead", position=Vector2(0, 0))
         self.homestead.alliance = Alliance.ally
-        self.homestead.set_attribute(Attributes.max_health, 50)
-        self.homestead.set_attribute(Attributes.health, 50)
-        self.homestead.set_attribute(Attributes.move_speed, 0)
+        self.homestead.set_data(ENTITIES["homestead"])
         self.homestead.add_component(PhysicsComponent())
         self.add_entity(self.homestead)
 
         player = Entity(name="player", entity_type="player", position=Vector2(3, 0))
         player.alliance = Alliance.ally
-        player.set_attribute(Attributes.max_health, 30)
-        player.set_attribute(Attributes.health, 30)
-        player.set_attribute(Attributes.move_speed, 5.0)
-        player.set_attribute(Attributes.damage, 10.0)
-        player.set_attribute(Attributes.attack_speed, 0.5)
-        player.set_attribute(Attributes.attack_range, 10.0)
+        player.set_data(ENTITIES["player"])
         player.add_component(PhysicsComponent())
         player.add_component(AttackComponent())
+        player.add_component(PowerupPickerComponent())
         self.add_entity(player)
 
     def listen(self, event_type, callback):
@@ -63,10 +71,13 @@ class Simulation:
         self.event_queue.clear()
 
     def update(self, delta: float, actions: list[Action] = []):
+        self.game_duration += delta
+
         for action in actions:
             action.apply(self, delta)
         
-        self.spawner.update(delta)
+        self.enemies_spawner.update(delta)
+        self.powerup_spawner.update(delta)
         self.level.update(delta)
 
         for entity in self.entities.values():
@@ -132,3 +143,31 @@ class Simulation:
     
         return entities
 
+    def create_enemy(self):
+        enemy = Entity(name="enemy", entity_type="enemy")
+        enemy.alliance = Alliance.opponent
+        enemy.set_data(ENTITIES["enemy"])
+
+        default_attributes = ENTITIES["enemy"]["attributes"]
+
+        for attribute_id in ENTITIES["enemy"]["scaling"]:
+            scaling_fn = ENTITIES["enemy"]["scaling"][attribute_id]
+            value = round(scaling_fn(default_attributes[attribute_id], self.game_duration))
+            enemy.set_attribute(attribute_id, value)
+            print(f"[Enemy] {attribute_id} {value}")
+
+            if attribute_id == Attributes.max_health:
+                enemy.set_attribute(Attributes.health, value)
+
+        enemy.add_component(PhysicsComponent())
+        enemy.add_component(EnemyComponent())
+        return enemy
+
+    def create_powerup(self):
+        entity = Entity(name="powerup", entity_type="powerup")
+
+        bonus = random.choice(ENTITIES["powerup"]["bonuses"])
+        powerup = PowerupComponent({ bonus[0]: bonus[1] })
+        entity.add_component(powerup)
+        
+        return entity

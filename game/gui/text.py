@@ -16,7 +16,7 @@ class Text(GuiElement):
         text="",
         position: Vector2 = Vector2(),
         color=(255,255,255),
-        font_size=30,
+        font_size: int = 30,
         horizontal_alignment="start",
     ):
         super().__init__(position, horizontal_sizing="fill")
@@ -33,8 +33,10 @@ class Text(GuiElement):
         if text:
             font = Text.get_font(self.font_size)
             self._font_image = font.render(self._text, True , self.color)
+            self.size = Vector2(self._font_image.get_width(), self._font_image.get_height())
         else:
             self._font_image = None
+            self.size = Vector2(0, 0)
 
     def render(self, screen, delta):
         if self._font_image:

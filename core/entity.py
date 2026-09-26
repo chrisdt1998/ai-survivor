@@ -1,3 +1,4 @@
+from core.attributes import Attributes
 from typing import TYPE_CHECKING
 from ast import TypeVar
 
@@ -45,6 +46,14 @@ class Entity:
         self.attributes: dict[str, float] = {}
         self.components: dict[type, Component] = {}
         self.rotation: float = 0
+
+    def set_data(self, data):
+        if "attributes" in data:
+            for attribute_id in data["attributes"]:
+                self.set_attribute(attribute_id, data["attributes"][attribute_id])
+            
+            max_health = self.get_attribute(Attributes.max_health)
+            self.set_attribute(Attributes.health, max_health)
 
     def setup(self):
         for comp in self.components.values():

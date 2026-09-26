@@ -1,7 +1,6 @@
-from game.game import run_render
 import argparse
 import logging
-from agent.trainer import train
+from game.game import run_render
 from game.renderer import Renderer
 
 logger = logging.getLogger(__name__)
@@ -15,6 +14,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     if args.train:
+        from agent.trainer import train
         renderer = None
         if args.render:
             renderer = Renderer()
