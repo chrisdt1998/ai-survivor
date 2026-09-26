@@ -44,12 +44,12 @@ class Agent:
         self.mode = mode
         if mode == 'train':
             if not model_path:
-                self.model_main = Linear_QNet(STATE_SIZE, 480, 4)  # State size, hidden size and output action size
+                self.model_main = Linear_QNet(STATE_SIZE, 480, 5)  # State size, hidden size and output action size
                 self.model_target = copy.deepcopy(self.model_main)
                 self.trainer = QTrainer(self.model_main, lr=LR, gamma=self.gamma)
             else:
                 # Load the model from the model path
-                self.model_main = Linear_QNet(STATE_SIZE, 480, 4)
+                self.model_main = Linear_QNet(STATE_SIZE, 480, 5)
                 self.model_main.load_state_dict(torch.load(model_path))
                 self.model_target = copy.deepcopy(self.model_main)
                 self.trainer = QTrainer(self.model_main, lr=LR, gamma=self.gamma)
@@ -98,11 +98,11 @@ class Agent:
         return np.concatenate((player_state.flatten(), enemies_state.flatten(), powerups_state.flatten()))
 
     def get_action(self, state):
-        final_move = [0, 0, 0, 0]
+        final_move = [0, 0, 0, 0, 0]
         # random moves: tradeoff exploration / exploitation
         if random.uniform(0, 1) < self.epsilon and self.mode != 'test':
             self.num_random_moves += 1
-            move = random.randint(0, 3)
+            move = random.randint(0, 4)
         else:
             self.num_non_random_moves += 1
             state = torch.tensor(state, dtype=torch.float)
@@ -122,8 +122,11 @@ class Agent:
             Vector2(0, -1),  # Up
             Vector2(1, 0),  # Right
         ]
-        action = MoveAction(player, final_move[action.index(1)])
-        simulation.update(time_delta, [action])
+        move_idx = action.index(1)
+        # If move_idx == 4, it means just don't move
+        if move_idx != 4:
+            action = MoveAction(player, final_move[action.index(1)])
+            simulation.update(time_delta, [action])
         done = False
         reward = 0
         for event_type, data in simulation.event_queue:
@@ -145,6 +148,8 @@ class Agent:
         entities_in_danger_zone = self.get_nearby_entities(player, simulation, distance=DANGER_DISTANCE)
         reward += len(entities_in_danger_zone.enemies) * self.reward_system.nearby_enemy
         reward += len(entities_in_danger_zone.powerups) * self.reward_system.nearby_powerup
+        # For staying alive
+        reward += 0.001
 
         return reward, done
 

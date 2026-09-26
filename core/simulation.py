@@ -41,7 +41,7 @@ class Simulation:
         player.set_attribute(Attributes.max_health, 30)
         player.set_attribute(Attributes.health, 30)
         player.set_attribute(Attributes.move_speed, 5.0)
-        player.set_attribute(Attributes.damage, 1.0)
+        player.set_attribute(Attributes.damage, 10.0)
         player.set_attribute(Attributes.attack_speed, 0.5)
         player.set_attribute(Attributes.attack_range, 10.0)
         player.add_component(PhysicsComponent())
