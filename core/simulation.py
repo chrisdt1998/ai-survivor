@@ -19,7 +19,7 @@ class Simulation:
         self.entities: dict[int, Entity] = {}
         self.entity_next_id: int = 0
         
-        self.entities_to_remove: list[Entity] = []
+        self.entities_to_remove: list[int] = []
         self.entities_to_add: list[Entity] = []
     
         self.map_min = Vector2(-10, -10)
@@ -53,7 +53,7 @@ class Simulation:
 
     def emit(self, event_type, data):
         self.event_queue.append((event_type, data))
-        print(f"[Event] {event_type}")
+        # print(f"[Event] {event_type}")
     
     def drain_events(self):
         for (event_type, data) in self.event_queue:
@@ -78,7 +78,7 @@ class Simulation:
 
     def add_entity(self, entity: Entity):
         if entity.id != -1:
-            print("Entity already added")
+            # print("Entity already added")
             return
             
         self.entity_next_id += 1
@@ -88,7 +88,7 @@ class Simulation:
         entity.setup()
         self.emit("entity_added", entity)
 
-    def destroy_entity(self, entity: Entity):
+    def _destroy_entity(self, entity: Entity):
         # Defer entity removal to avoid issues during
         # entities loop update
         entity.on_destroyed()
@@ -119,7 +119,7 @@ class Simulation:
 
         return closest_entity
 
-    def get_entities_in_range(self, position: Vector2, range: float = inf, filter = lambda: True) -> list[Entity]:
+    def get_entities_in_range(self, position: Vector2, range: float = inf, filter=lambda x: True) -> list[Entity]:
         entities = []
 
         for entity in self.entities.values():

@@ -2,15 +2,17 @@ import copy
 import random
 from collections import deque
 from types import SimpleNamespace
+from core.actions.action import MoveAction
+from core.vector2 import Vector2
 
 import numpy as np
 import torch
-from model import Linear_QNet, QTrainer
+from agent.model import Linear_QNet, QTrainer
 
 from core.simulation import Simulation
 
 AGENT_VIEWING_DISTANCE = 4.5
-DANGER_DISTANCE = 1.5
+DANGER_DISTANCE = 0.5
 GRID_SIZE = int(AGENT_VIEWING_DISTANCE * 2)
 STATE_SIZE = 3 * GRID_SIZE * GRID_SIZE  # (enemies + player + powerups) * GRID_SIZE * GRID_SIZE
 MAX_MEMORY = 20000
@@ -52,10 +54,6 @@ class Agent:
                 self.model_target = copy.deepcopy(self.model_main)
                 self.trainer = QTrainer(self.model_main, lr=LR, gamma=self.gamma)
 
-            self.model_main = Linear_QNet(STATE_SIZE, 480, 4)
-            self.model_main.load_state_dict(torch.load(model_path))
-            self.model_main.eval()
-
     def get_bucketed_position(self, position_1: float, position_2: float) -> int:
         return int(position_1 - position_2 + AGENT_VIEWING_DISTANCE)
 
@@ -81,7 +79,7 @@ class Agent:
         return SimpleNamespace(homestead=homestead, enemies=enemies, powerups=powerups)
 
 
-    def get_state(self, simulation: Simulation) -> torch.Tensor:
+    def get_state(self, simulation: Simulation) -> np.ndarray:
         player = simulation.get_entity_by_name('player')
         entities_in_range = self.get_nearby_entities(player, simulation)
 
@@ -97,14 +95,14 @@ class Agent:
 
         powerups_state = np.zeros((GRID_SIZE, GRID_SIZE))
         self.populate_state(powerups_state, entities_in_range.powerups)
-        return torch.tensor(player_state.flatten() + enemies_state.flatten() + powerups_state.flatten())
+        return np.concatenate((player_state.flatten(), enemies_state.flatten(), powerups_state.flatten()))
 
     def get_action(self, state):
         final_move = [0, 0, 0, 0]
         # random moves: tradeoff exploration / exploitation
         if random.uniform(0, 1) < self.epsilon and self.mode != 'test':
             self.num_random_moves += 1
-            move = random.randint(0, 2)
+            move = random.randint(0, 3)
         else:
             self.num_non_random_moves += 1
             state = torch.tensor(state, dtype=torch.float)
@@ -113,15 +111,19 @@ class Agent:
             # print(prediction)
             move = torch.argmax(prediction).item()
             # print(move)
-
         final_move[int(move)] = 1
-        # print(final_move)
-
         return final_move
 
-    def play_step(self, action, simulation):
+    def play_step(self, action, simulation, time_delta):
         player = simulation.get_entity_by_name('player')
-        simulation.update(0.016, action)
+        final_move = [
+            Vector2(0, 1),  # Down
+            Vector2(-1, 0),  # Left
+            Vector2(0, -1),  # Up
+            Vector2(1, 0),  # Right
+        ]
+        action = MoveAction(player, final_move[action.index(1)])
+        simulation.update(time_delta, [action])
         done = False
         reward = 0
         for event_type, data in simulation.event_queue:
@@ -159,6 +161,7 @@ class Agent:
         self.trainer.train_step(states, actions, rewards, next_states, model_target, dones)
 
     def remember(self, state, action, reward, next_state, done):
+        # print(state)
         self.memory.append((state, action, reward, next_state, done))
     
     

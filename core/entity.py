@@ -62,8 +62,10 @@ class Entity:
         return tag in self.tags
 
     def destroy(self):
+        if self.is_destroyed:
+            return
         self.is_destroyed = True
-        self.simulation.destroy_entity(self)
+        self.simulation._destroy_entity(self)
 
     def add_component(self, component: Component):
         component.entity = self

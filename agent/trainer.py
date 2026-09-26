@@ -4,9 +4,12 @@ import copy
 
 import matplotlib.pyplot as plt
 from IPython import display
+from game.renderer import Renderer
 
 plt.ion()
 
+FPS = 15
+TIME_DELTA = 1 / FPS
 
 def plot(scores, mean_scores):
     display.clear_output(wait=True)
@@ -25,7 +28,7 @@ def plot(scores, mean_scores):
 
 
 
-def train(show_visuals=True, model_path=None, nbr_games=20000):
+def train(renderer: Renderer | None = None, model_path='', nbr_games=20000):
     plot_scores = []
     plot_mean_scores = []
     total_score = 0
@@ -33,9 +36,11 @@ def train(show_visuals=True, model_path=None, nbr_games=20000):
     current_score = 0
     # agent = Agent(mode='train', model_path=model_path)
     simulation = Simulation()
-    agent = Agent(mode='train', )
+    agent = Agent(mode='train', model_path=model_path)
+    if renderer:
+        renderer.set_simulation(simulation)
     current_iter = 0
-    while current_iter < 20000:
+    while agent.n_games < nbr_games:
         # Get previous state
         state_old = agent.get_state(simulation)
 
@@ -43,7 +48,10 @@ def train(show_visuals=True, model_path=None, nbr_games=20000):
         final_move = agent.get_action(state_old)
 
         # Perform move and get new state
-        reward, done = agent.play_step(final_move, simulation)
+        reward, done = agent.play_step(final_move, simulation, TIME_DELTA)
+        current_score += reward
+        if renderer:
+            renderer.render(TIME_DELTA)
         state_new = agent.get_state(simulation)
 
         # Train short memory
@@ -54,7 +62,6 @@ def train(show_visuals=True, model_path=None, nbr_games=20000):
 
         if done:
             # Train long memory, plot result
-            simulation = Simulation()
             agent.epsilon = agent.epsilon - agent.epsilon_decay if agent.epsilon > agent.epsilon_min else agent.epsilon_min
             agent.n_games += 1
             agent.train_long_memory(agent.model_target)
@@ -77,10 +84,15 @@ def train(show_visuals=True, model_path=None, nbr_games=20000):
             total_score += current_score
             mean_score = total_score / agent.n_games
             plot_mean_scores.append(mean_score)
-            plot(plot_scores, plot_mean_scores)
+            # plot(plot_scores, plot_mean_scores)
+            simulation = Simulation()
+            if renderer:
+                renderer.set_simulation(simulation)
             current_score = 0
 
         current_iter += 1
+        if current_iter == 1:
+            agent.model_main.save(file_name='initial_test_save.pth')
         if current_iter % 2000 == 0:
             print("Updating model target")
             agent.model_target = copy.deepcopy(agent.model_main)
