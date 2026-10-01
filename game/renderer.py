@@ -15,6 +15,8 @@ from game.gui.gui import GUI
 from game.sprites import Sprites
 from game.components.visual_component import VisualComponent
 
+from agent.agent import Agent
+
 import pygame
 
 def loadSprite(path) -> pygame.Surface:
@@ -65,14 +67,22 @@ class Renderer:
 
         pygame.display.flip()
     
-    def run(self):
+    def run(self, agent: Agent = None):
         clock = pygame.time.Clock()
         running = True
         delta_time = 0
         accumulator = 0
 
         while running:
-            actions = self.player_controller.get_actions(self.player)
+            if agent:
+                print('using agent')
+                state = agent.get_state(self.simulation)
+                action = agent.get_action(state)
+                print(action)
+                actions = agent.convert_action_to_vector(action)
+                print(actions)
+            else:
+                actions = self.player_controller.get_actions(self.player)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

@@ -41,7 +41,7 @@ class QTrainer:
         self.gamma = gamma
         self.model = model
         self.optimizer = optim.Adam(model.parameters(), lr=lr)
-        self.criterion = nn.MSELoss()
+        self.criterion = nn.SmoothL1Loss()  # Huber loss: bounded updates on large errors (e.g. death penalty)
 
     def train_step(self, state, action, reward, next_state, model_target, done):
         self.model.train()
@@ -58,7 +58,8 @@ class QTrainer:
             next_state = torch.unsqueeze(next_state, 0)
             done = torch.unsqueeze(done, 0)
 
-        next_state_Q = torch.max(model_target(next_state), dim=-1)[0]
+        with torch.no_grad():
+            next_state_Q = torch.max(model_target(next_state), dim=-1)[0]
         target = reward + (1. - done) * self.gamma * next_state_Q
 
         pred = self.model(state)
@@ -66,7 +67,7 @@ class QTrainer:
         if action.shape[-1] > 1 and action.shape[0] != action.shape[-1]:
             action_mask = action
         else:
-            action_mask = F.one_hot(action, num_classes=3)
+            action_mask = F.one_hot(action, num_classes=5)
 
         masked_pred = torch.sum(action_mask * pred, dim=-1)
         self.optimizer.zero_grad()

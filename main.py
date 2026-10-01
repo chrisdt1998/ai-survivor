@@ -1,6 +1,6 @@
 import argparse
 import logging
-from game.game import run_render
+from game.game import run_render, run_with_agent
 from game.renderer import Renderer
 
 logger = logging.getLogger(__name__)
@@ -11,14 +11,21 @@ if __name__ == "__main__":
     parser.add_argument('--train', help='Train the model', required=False, default=False, action='store_true')
     parser.add_argument('--render', help='Run and show the renders', required=False, default=False, action='store_true')
     parser.add_argument('--show-plot', help='Display the training plot live (it is always saved to file)', required=False, default=False, action='store_true')
+    parser.add_argument('--use-agent', help='Use the agent to play the game', required=False, default=False, action='store_true')
 
     args = parser.parse_args()
-    
+
     if args.train:
         from agent.trainer import train
         renderer = None
         if args.render:
             renderer = Renderer()
-        train(renderer)
+        train(renderer, model_path='', show_plot=args.show_plot)
     elif args.render:
-        run_render()
+        if args.use_agent:
+            run_with_agent()
+        else:
+            run_render()
+
+    # from agent.trainer import train
+    # train(None, model_path='')

@@ -33,6 +33,8 @@ class Simulation:
     
         self.map_min = Vector2(-10, -10)
         self.map_max = Vector2(10, 10)
+        self.map_length = 20
+        self.map_width = 20
         self.level = Level(self.map_min, self.map_max)
 
         self.game_duration = 0
@@ -108,8 +110,6 @@ class Simulation:
         # Defer entity removal to avoid issues during
         # entities loop update
         entity.on_destroyed()
-        if entity.entity_type == 'player':
-            print('player killed')
         self.entities_to_remove.append(entity.id)
         self.emit("entity_destroyed", entity)
     
@@ -130,7 +130,7 @@ class Simulation:
             if not filter(entity):
                 continue
 
-            dist = entity.position.distance_squared_to(position)
+            dist = entity.position.distance_to(position)
             if dist < range and dist < closest_dist:
                 closest_dist = dist
                 closest_entity = entity
@@ -144,7 +144,7 @@ class Simulation:
             if not filter(entity):
                 continue
 
-            dist = entity.position.distance_squared_to(position)
+            dist = entity.position.distance_to(position)
             if dist < range:
                 entities.append(entity)
     
